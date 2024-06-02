@@ -1,7 +1,7 @@
 import pytest
 import os
 
-from minbpe import BasicTokenizer
+from minbpe import BasicTokenizer, RegexTokenizer
 
 test_strings = [
     "",
@@ -19,7 +19,7 @@ def unpack(text):
     else:
         return text
 
-@pytest.mark.parametrize("tokenizer_factory", [BasicTokenizer])
+@pytest.mark.parametrize("tokenizer_factory", [BasicTokenizer, RegexTokenizer])
 @pytest.mark.parametrize("text", test_strings)
 def test_encode_decode_identity_0(tokenizer_factory, text):
     text = unpack(text)
@@ -29,17 +29,27 @@ def test_encode_decode_identity_0(tokenizer_factory, text):
     decoded = tokenizer.decode(ids)
     assert text == decoded
 
-tokenizer_trained = BasicTokenizer()
-tokenizer_trained.train(unpack("FILE:taylorswift.txt"), 512, verbose=False)
+basic_tokenizer_trained = BasicTokenizer()
+basic_tokenizer_trained.train(unpack("FILE:taylorswift.txt"), 512, verbose=False)
 @pytest.mark.skip(reason="It's running too slow")
 @pytest.mark.parametrize("text", test_strings)
 def test_encode_decode_identity_1(text):
     text = unpack(text)
-    ids = tokenizer_trained.encode(text)
-    decoded = tokenizer_trained.decode(ids)
+    ids = basic_tokenizer_trained.encode(text)
+    decoded = basic_tokenizer_trained.decode(ids)
     assert text == decoded
 
-@pytest.mark.parametrize("tokenizer_factory", [BasicTokenizer])
+regex_tokenizer_trained = RegexTokenizer()
+regex_tokenizer_trained.train(unpack("FILE:taylorswift.txt"), 512, verbose=False)
+@pytest.mark.skip(reason="It's running too slow")
+@pytest.mark.parametrize("text", test_strings)
+def test_encode_decode_identity_2(text):
+    text = unpack(text)
+    ids = regex_tokenizer_trained.encode(text)
+    decoded = regex_tokenizer_trained.decode(ids)
+    assert text == decoded
+
+@pytest.mark.parametrize("tokenizer_factory", [BasicTokenizer, RegexTokenizer])
 def test_wikipedia_example(tokenizer_factory):
     """
     Quick unit test, following along the Wikipedia example:
